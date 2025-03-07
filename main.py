@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxL
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Rotating Image with Speed Slider")
+        self.setWindowTitle("P20A Final Proj Solar System Sim")
 
         # Create central widget and layout
         self.central_widget = QWidget()
