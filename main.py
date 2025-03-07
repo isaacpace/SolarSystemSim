@@ -67,11 +67,10 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    print(os.getcwd())
     app = QApplication(sys.argv)
     app.setStyleSheet("QLabel { color: white; } QWidget { background-color: black; }")
 
     window = MainWindow()
     window.show()
-    _ = input() # don't exit until enter is pressed
+    sys.exit(app.exec())
     
