@@ -1,12 +1,51 @@
 import os, sys
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QPixmap, QTransform
+from PySide6.QtCore import Qt, QTimer, QPoint
+from PySide6.QtGui import QPaintEvent, QPixmap, QTransform, QPainter
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 
+WINDOW_X_SIZE = 1280
+WINDOW_Y_SIZE = 720
+ASSET_RESOLUTION = 400
+GRAV = 6.6743 * 10**-11
+FPS = 60
+SUN_MASS = 1.989 * 10 ** 30 # this should probably go in a file somewhere
+
+m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE
+sun_scale = 100
+planet_scale = 5000
+default_time_scale = 3_000_000
+
+def get_accel_vector(mass, x_disp, y_disp):
+    distance_squared = x_disp * x_disp + y_disp * y_disp
+    distance = distance_squared ** 0.5
+    acc_mag = mass * GRAV / distance_squared
+    return (acc_mag * -x_disp / distance, acc_mag * -y_disp / distance)
+
+
+
+class Planet:
+    def __init__(self, posx, posy, vx, vy, radius, image_path = None):
+        self.posx, self.posy = posx, posy
+        self.vx, self.vy = vx, vy
+        self.radius = radius
+        if image_path:
+            self.graphics_item : QGraphicsPixmapItem = QGraphicsPixmapItem(QPixmap(image_path))
+        else:
+            self.graphics_item : QGraphicsPixmapItem = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
+
+class Sun:
+    def __init__(self, radius, image_path = None):
+        self.radius = radius
+        if image_path:
+            self.graphics_item : QGraphicsPixmapItem = QGraphicsPixmapItem(QPixmap(image_path))
+        else:
+            self.graphics_item : QGraphicsPixmapItem = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
+ 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
         self.setWindowTitle("P20A Final Proj Solar System Sim")
 
         # Create central widget and layout
@@ -17,19 +56,19 @@ class MainWindow(QMainWindow):
         # Canvas for drawing
         self.view = QGraphicsView(self)
         self.scene = QGraphicsScene(self)
-        self.scene.setSceneRect(0, 0, 1280, 720)
+        self.scene.setSceneRect(0, 0, WINDOW_X_SIZE, WINDOW_Y_SIZE)
         self.view.setScene(self.scene)
-        self.view.setFixedSize(1280, 720)
+        self.view.setFixedSize(WINDOW_X_SIZE, WINDOW_Y_SIZE)
         layout.addWidget(self.view)
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         
         # QSlider to control rotation speed
-        layout.addWidget(QLabel("Rotation Speed"))
-        self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.setRange(0, 100)
-        self.slider.setValue(5)
-        layout.addWidget(self.slider)
+        layout.addWidget(QLabel("Time Scale"))
+        self.time_slider = QSlider(Qt.Horizontal, self)
+        self.time_slider.setRange(0, default_time_scale * 10)
+        self.time_slider.setValue(default_time_scale)
+        layout.addWidget(self.time_slider)
 
         # QSlider to control zoom
         layout.addWidget(QLabel("Zoom"))
@@ -39,30 +78,60 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.zoom_slider)
 
         # Load the placeholder image
-        self.placeholder_image = QPixmap("./assets/sol_placeholder.png")
-        self.angle = 0
-        self.pixmap_item = QGraphicsPixmapItem(self.placeholder_image)
-        self.scene.addItem(self.pixmap_item)
-        self.pixmap_item.setTransformOriginPoint(self.placeholder_image.width() / 2, self.placeholder_image.height() / 2)
-        self.pixmap_item.setPos(640 - self.placeholder_image.width() / 2, 360 - self.placeholder_image.height() / 2)
-        self.pixmap_item.setToolTip("Test Mouseover")
+        # self.placeholder_image = QPixmap("./assets/sol_placeholder.png")
+        # self.angle = 0
+        # self.pixmap_item = QGraphicsPixmapItem(self.placeholder_image)
+        # self.scene.addItem(self.pixmap_item)
+        # self.pixmap_item.setTransformOriginPoint(self.placeholder_image.width() / 2, self.placeholder_image.height() / 2)
+        # self.pixmap_item.setPos(640 - self.placeholder_image.width() / 2, 360 - self.placeholder_image.height() / 2)
+        # self.pixmap_item.setToolTip("Test Mouseover")
+
+
+        self.sun = Sun(695_508_000, './assets/sun.png')
+        self.scene.addItem(self.sun.graphics_item)
+        scale = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
+        self.sun.graphics_item.setScale(self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION)
+        bounding_rect = self.sun.graphics_item.boundingRect()
+        self.sun.graphics_item.setPos(QPoint(WINDOW_X_SIZE / 2 - bounding_rect.width() * scale / 2, WINDOW_Y_SIZE / 2 - bounding_rect.height() * scale / 2)) # TODO: might need to adjust this depending on how we implement follow/zoom
+        
+
+        self.planets : Planet = [ # we should get these from a yaml file
+            Planet(149_600_000_000, 0, 0, 29_800, 6_371_000), # Earth
+            Planet(4_500_000_000_000, 0, 0, 5_430, 24_622_000) # Neptune
+        ]
+        for planet in self.planets:
+            self.scene.addItem(planet.graphics_item)
 
         # Timer for frame update
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_render)
-        self.timer.setInterval(16) # 60FPS
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.setInterval(1000 / FPS) # 60FPS
         self.timer.start()
 
-    def update_render(self):
+    def update_frame(self):
         # Scale the scene view
         self.view.resetTransform() 
         self.view.scale(self.zoom_slider.value() / 100, self.zoom_slider.value() / 100)
 
-        # Rotate the image
-        self.pixmap_item.setRotation(self.angle)
-        self.angle += (self.slider.value() / 100)
-        if self.angle >= 360:
-            self.angle = 0
+        time_scale = self.time_slider.value()
+
+        for planet in self.planets:
+            scale = planet.radius * 2 * planet_scale / m_per_px / ASSET_RESOLUTION
+            planet.graphics_item.setScale(scale)
+
+            bounding_rect = planet.graphics_item.boundingRect()
+            x = WINDOW_X_SIZE / 2.0 + planet.posx / m_per_px - bounding_rect.width() * scale / 2.0
+            y = WINDOW_Y_SIZE / 2.0 + planet.posy / m_per_px - bounding_rect.height() * scale / 2.0
+
+            planet.graphics_item.setPos(x, y)
+            planet.posx += planet.vx * time_scale / FPS
+            planet.posy += planet.vy * time_scale / FPS
+
+            accel = get_accel_vector(SUN_MASS, planet.posx, planet.posy)
+            planet.vx += accel[0] * time_scale / FPS
+            planet.vy += accel[1] * time_scale / FPS
+
+
 
 
 
