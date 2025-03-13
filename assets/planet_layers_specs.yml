@@ -1,0 +1,158 @@
+
+Mercury:
+  Core:
+    Thickness: 2_074 # km
+    Color: (70, 69, 63) # RGB
+    Elements:
+      - Iron
+  Mantle:
+    Thickness: 400 
+    Color: (222, 146, 71)
+    Elements:
+      - Iron
+      - Magnesium
+  Crust:
+    Thickness: 30
+    Color: (226, 202, 68)
+    Elements:
+      - Silicon
+
+Venus:
+  Core:
+    Thickness: 3_000 
+    Color:
+    Elements:
+      - Iron
+      - Nickel
+  Mantle:
+    Thickness: 2_840
+    Color:
+    Elements:
+      - Silicon
+  Crust:
+    Thickness: 20
+    Color:
+    Elements:
+      - Silicon
+
+Earth:
+  Inner Core:
+    Thickness: 1_221
+    Color: 
+    Elements:
+      - Iron
+      - Nickel
+  Outer Core:
+    Thickness: 2_300
+    Color: 
+    Elements:
+      - Iron
+      - Nickel
+  Mantle:
+    Thickness: 2_900
+    Color:
+    Elements:
+      - Magnesium
+      - Oxygen
+      - Silicon
+  Crust:
+    Thickness: 30
+    Color:
+    Elements:
+      - Aluminum
+      - Iron
+      - Oxygen
+      - Silicon
+
+Mars:
+  Core:
+    Thickness: 1_800
+    Color:
+    Elements:
+      - Iron
+      - Nickel
+      - Sulfur
+  Mantle:
+    Thickness: 1_560
+    Color:
+    Elements:
+      - Iron
+      - Magnesium
+      - Oxygen
+      - Silicon
+  Crust:
+    Thickness: 30
+    Color:
+    Elements:
+      - Aluminum
+      - Calcium
+      - Iron
+      - Magnesium
+      - Potassium
+
+Jupiter:
+  Core:
+    Thickness: 10_000 # Unknown
+    Color:
+    Elements:
+      - Unknown
+  Metallic Hydrogen Layer: # Questionable
+    Thickness: 40_000
+    Color:
+    Elements:
+      - Hydrogen
+  Molecular Hydrogen Layer: # Questionable
+    Thickness: 20_000
+    Color:
+    Elements:
+      - Hydrogen
+
+Saturn:
+  Core:
+    Thickness: 10_000 # Unknown
+    Color:
+    Elements:
+      - Iron
+      - Nickel
+  Metallic Hydrogen Layer: # Questionable
+    Thickness: 20_000
+    Color:
+    Elements:
+      - Hydrogen
+  Molecular Hydrogen Layer: # Questionable
+    Thickness: 30_000
+    Color:
+    Elements:
+      - Hydrogen
+
+Neptune:
+  Core:
+    Thickness: 4_000 # Questionable
+    Color:
+    Elements:
+      - Iron
+      - Nickel
+  Icy Layer:
+    Thickness: 17_000 # Questionable
+    Color:
+    Elements:
+      - Carbon
+      - Hydrogen
+      - Nitrogen
+      - Oxygen
+
+Uranus:
+  Core:
+    Thickness: 4_000 # Questionable
+    Color:
+    Elements:
+      - Iron
+      - Nickel
+  Icy Layer:
+    Thickness: 17_000 # Questionable
+    Color:
+    Elements:
+      - Carbon
+      - Hydrogen
+      - Nitrogen
+      - Oxygen
