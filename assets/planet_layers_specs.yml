@@ -124,7 +124,7 @@ Saturn:
     Elements:
       - Hydrogen
 
-Neptune:
+Uranus:
   Core:
     Thickness: 4_000 # Questionable
     Color:
@@ -140,7 +140,7 @@ Neptune:
       - Nitrogen
       - Oxygen
 
-Uranus:
+Neptune:
   Core:
     Thickness: 4_000 # Questionable
     Color:
