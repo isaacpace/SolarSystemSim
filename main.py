@@ -116,7 +116,7 @@ class MainWindow(QMainWindow):
         
 
         self.planets : Planet = [ # we should get these from a yaml file
-            Planet(149_600_000_000, 0, 0, 29_800, 6_371_000), # Earth
+            Planet(149_600_000_000, 0, 0, 29_800, 6_371_000, "./assets/earth.png"), # Earth
             Planet(4_500_000_000_000, 0, 0, 5_430, 24_622_000) # Neptune
         ]
         for planet in self.planets:
