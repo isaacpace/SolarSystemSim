@@ -68,6 +68,20 @@ class MainWindow(QMainWindow):
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         
+        # QSlider to control sun_scale
+        layout.addWidget(QLabel("Sun Scale"))
+        self.sun_scale_slider = QSlider(Qt.Orientation.Horizontal, self)
+        self.sun_scale_slider.setRange(0, sun_scale * 10)
+        self.sun_scale_slider.setValue(sun_scale)
+        layout.addWidget(self.sun_scale_slider)
+
+        # QSlider to control planet_scale
+        layout.addWidget(QLabel("Planet Scale"))
+        self.planet_scale_slider = QSlider(Qt.Orientation.Horizontal, self)
+        self.planet_scale_slider.setRange(0, planet_scale * 10)
+        self.planet_scale_slider.setValue(planet_scale)
+        layout.addWidget(self.planet_scale_slider)
+
         # QSlider to control time warp
         layout.addWidget(QLabel("Time Scale"))
         self.time_slider = QSlider(Qt.Horizontal, self)
@@ -119,7 +133,13 @@ class MainWindow(QMainWindow):
         self.view.resetTransform() # scale is relative to previous scale, so need to reset or it grows/shrinks again on each frame
         self.view.scale(self.zoom_slider.value() / 100, self.zoom_slider.value() / 100)
 
+        planet_scale = self.planet_scale_slider.value()
+        sun_scale = self.sun_scale_slider.value()
         time_scale = self.time_slider.value()
+
+        # scale sun
+        scale = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
+        self.sun.graphics_item.setScale(self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION)
 
         # technically there's no reason why the physics has to only update once per drawn frame
         # if we need more physics precision we can decouple them and run physics update more often
