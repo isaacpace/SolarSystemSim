@@ -115,7 +115,6 @@ class MainWindow(QMainWindow):
         with open('planets.yml', 'r') as f:
             data = yaml.safe_load(f)
             for planet in data:
-                print(planet)
                 self.planets.append(Planet(planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['image']))
         for planet in self.planets:
             self.scene.addItem(planet.graphics_item)
