@@ -30,7 +30,8 @@ def get_accel_vector(mass, x_disp, y_disp):
 
 
 class Planet:
-    def __init__(self, posx, posy, vx, vy, radius, image_path = None):
+    def __init__(self, name, posx, posy, vx, vy, radius, image_path = None):
+        self.name = name
         self.posx, self.posy = posx, posy
         self.vx, self.vy = vx, vy
         self.radius = radius # this is the radius of the planet itself, NOT orbit
@@ -38,6 +39,7 @@ class Planet:
             self.graphics_item = QGraphicsPixmapItem(QPixmap(image_path))
         else:
             self.graphics_item = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
+        self.graphics_item.setToolTip(self.name)
 
 class Sun: # honestly this probably doesn't even need to be a class, might clean up later
     def __init__(self, radius, image_path = None):
@@ -116,7 +118,7 @@ class MainWindow(QMainWindow):
         with open('planets.yml', 'r') as f:
             data = yaml.safe_load(f)
             for planet in data:
-                self.planets.append(Planet(planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['image']))
+                self.planets.append(Planet(planet['name'], planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['image']))
         for planet in self.planets:
             self.scene.addItem(planet.graphics_item)
 
