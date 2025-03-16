@@ -1,4 +1,4 @@
-import os, sys, yaml
+import os, sys, yaml, time
 from PySide6.QtCore import Qt, QTimer, QPoint
 from PySide6.QtGui import QPaintEvent, QPixmap, QTransform, QPainter
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
@@ -9,7 +9,7 @@ ASSET_RESOLUTION = 400 # images are 400px by 400px
 GRAV = 6.6743 * 10**-11
 FPS = 60
 SUN_MASS = 1.989 * 10 ** 30 # this should probably go in a file somewhere
-TICKS_PER_FRAME = 100 # update physics 100x per frame
+TICKS_PER_FRAME = 16 # update physics 16x per frame
 
 # since QGraphicsView lets us transform the scale this might as well be a constant
 m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE 
@@ -120,17 +120,28 @@ class MainWindow(QMainWindow):
         for planet in self.planets:
             self.scene.addItem(planet.graphics_item)
 
-        self.tick = 0
         # Timer for physics update
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update)
-        self.timer.setInterval(1000 / FPS / TICKS_PER_FRAME) # 1000 ms / 60 FPS / 100 TICKS_PER_FRAME = .167 ms
-        self.timer.start()
+        # TODO: consider using an approach that allows even shorter timer
+        # physics currently run in about 15 us just fine, but QTimer doesn't support delays smaller than 1000 us
+        self.physics_timer = QTimer(self)
+        self.physics_timer.timeout.connect(self.update_physics)
+        self.physics_timer.setInterval(1000 / FPS / TICKS_PER_FRAME) # 1000 ms / 60 FPS / 16 TICKS_PER_FRAME ~= 1 ms
+        self.physics_timer.start()
+
+        self.frame_timer = QTimer(self)
+        self.frame_timer.timeout.connect(self.update_frame)
+        self.frame_timer.setInterval(1000 / FPS) # 1000 ms / 60 FPS = 16.67 ms
+        self.frame_timer.start()
     
-    def update(self):
+    def update_physics(self):
+        # physics updates
+        # DON'T draw anything in this function, it will be too slow
+
         time_scale = self.time_slider.value()
-        time_step = time_scale / FPS / TICKS_PER_FRAME
+        time_step = time_scale * (self.physics_timer.interval() / 1000) 
+        
         for planet in self.planets:
+            # move planet
             planet.posx += planet.vx * time_step
             planet.posy += planet.vy * time_step
 
@@ -140,12 +151,11 @@ class MainWindow(QMainWindow):
             planet.vy += accel[1] * time_step
             # there's a trick where applying half the acceleration before moving and half after gives a better approximation
             # may be worth doing if our sim isn't precise enough
-        if self.tick >= TICKS_PER_FRAME:
-            self.update_frame()
-            self.tick = 0
-        self.tick += 1
-
+    
     def update_frame(self):
+        # draw updates
+        # DON'T do any physics in this function, modify update_physics() instead
+
         # Scale the scene view
         self.view.resetTransform() # scale is relative to previous scale, so need to reset or it grows/shrinks again on each frame
         self.view.scale(self.zoom_slider.value() / 100, self.zoom_slider.value() / 100)
@@ -159,8 +169,6 @@ class MainWindow(QMainWindow):
         bounding_rect = self.sun.graphics_item.boundingRect()
         self.sun.graphics_item.setPos(QPoint(WINDOW_X_SIZE / 2 - bounding_rect.width() * scale / 2, WINDOW_Y_SIZE / 2 - bounding_rect.height() * scale / 2)) # TODO: might need to adjust this depending on how we implement follow/zoom
 
-        # technically there's no reason why the physics has to only update once per drawn frame
-        # if we need more physics precision we can decouple them and run physics update more often
         for planet in self.planets:
             # scale planet
             scale = planet.radius * 2 * planet_scale / m_per_px / ASSET_RESOLUTION
@@ -171,7 +179,7 @@ class MainWindow(QMainWindow):
             x = WINDOW_X_SIZE / 2.0 + planet.posx / m_per_px - bounding_rect.width() * scale / 2.0
             y = WINDOW_Y_SIZE / 2.0 + planet.posy / m_per_px - bounding_rect.height() * scale / 2.0
 
-            # move planet
+            # move planet graphic
             planet.graphics_item.setPos(x, y)
             
 
