@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, yaml
 from PySide6.QtCore import Qt, QTimer, QPoint
 from PySide6.QtGui import QPaintEvent, QPixmap, QTransform, QPainter
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
@@ -9,6 +9,7 @@ ASSET_RESOLUTION = 400 # images are 400px by 400px
 GRAV = 6.6743 * 10**-11
 FPS = 60
 SUN_MASS = 1.989 * 10 ** 30 # this should probably go in a file somewhere
+TICKS_PER_FRAME = 100 # update physics 100x per frame
 
 # since QGraphicsView lets us transform the scale this might as well be a constant
 m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE 
@@ -109,22 +110,40 @@ class MainWindow(QMainWindow):
 
         self.sun = Sun(695_508_000, './assets/sun.png')
         self.scene.addItem(self.sun.graphics_item)
-        scale = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
-        self.sun.graphics_item.setScale(self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION)
         
-
-        self.planets : Planet = [ # we should get these from a yaml file
-            Planet(149_600_000_000, 0, 0, 29_800, 6_371_000, "./assets/earth.png"), # Earth
-            Planet(4_500_000_000_000, 0, 0, 5_430, 24_622_000, "./assets/neptune.png") # Neptune
-        ]
+        self.planets = []
+        with open('planets.yml', 'r') as f:
+            data = yaml.safe_load(f)
+            for planet in data:
+                print(planet)
+                self.planets.append(Planet(planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['image']))
         for planet in self.planets:
             self.scene.addItem(planet.graphics_item)
 
-        # Timer for frame update
+        self.tick = 0
+        # Timer for physics update
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_frame)
-        self.timer.setInterval(1000 / FPS) # 1000 ms / 60 = 16.67 ms
+        self.timer.timeout.connect(self.update)
+        self.timer.setInterval(1000 / FPS / TICKS_PER_FRAME) # 1000 ms / 60 FPS / 100 TICKS_PER_FRAME = .167 ms
         self.timer.start()
+    
+    def update(self):
+        time_scale = self.time_slider.value()
+        time_step = time_scale / FPS / TICKS_PER_FRAME
+        for planet in self.planets:
+            planet.posx += planet.vx * time_step
+            planet.posy += planet.vy * time_step
+
+            # apply acceleration to planet
+            accel = get_accel_vector(SUN_MASS, planet.posx, planet.posy)
+            planet.vx += accel[0] * time_step
+            planet.vy += accel[1] * time_step
+            # there's a trick where applying half the acceleration before moving and half after gives a better approximation
+            # may be worth doing if our sim isn't precise enough
+        if self.tick >= TICKS_PER_FRAME:
+            self.update_frame()
+            self.tick = 0
+        self.tick += 1
 
     def update_frame(self):
         # Scale the scene view
@@ -133,7 +152,6 @@ class MainWindow(QMainWindow):
 
         planet_scale = self.planet_scale_slider.value()
         sun_scale = self.sun_scale_slider.value()
-        time_scale = self.time_slider.value()
 
         # scale sun
         scale = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
@@ -155,15 +173,7 @@ class MainWindow(QMainWindow):
 
             # move planet
             planet.graphics_item.setPos(x, y)
-            planet.posx += planet.vx * time_scale / FPS
-            planet.posy += planet.vy * time_scale / FPS
-
-            # apply acceleration to planet
-            accel = get_accel_vector(SUN_MASS, planet.posx, planet.posy)
-            planet.vx += accel[0] * time_scale / FPS
-            planet.vy += accel[1] * time_scale / FPS 
-            # there's a trick where applying half the acceleration before moving and half after gives a better approximation
-            # may be worth doing if our sim isn't precise enough
+            
 
 
 

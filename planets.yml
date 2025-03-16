@@ -1,0 +1,23 @@
+- name: Earth
+  initial_speed: 29800
+  aphelion: 149600000000
+  radius: 6371000
+  image: ./assets/earth.png
+
+- name: Jupiter
+  initial_speed: 13060
+  aphelion: 816400000000
+  radius: 69900000
+  image: ./assets/Jupiter.png
+
+- name: Neptune
+  initial_speed: 5430
+  aphelion: 4500000000000
+  radius: 24622000
+  image: ./assets/Neptune.png
+
+- name: Comet
+  initial_speed: 1200
+  aphelion: 7500000000000
+  radius: 20000000
+  image: ./assets/planet_placeholder.png
