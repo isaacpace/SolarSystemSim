@@ -65,6 +65,7 @@ class MainWindow(QMainWindow):
         self.scene.setSceneRect(0, 0, WINDOW_X_SIZE, WINDOW_Y_SIZE)
         self.view.setScene(self.scene)
         self.view.setFixedSize(WINDOW_X_SIZE, WINDOW_Y_SIZE)
+        self.view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         layout.addWidget(self.view)
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
