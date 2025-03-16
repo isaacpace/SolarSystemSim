@@ -111,8 +111,6 @@ class MainWindow(QMainWindow):
         self.scene.addItem(self.sun.graphics_item)
         scale = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
         self.sun.graphics_item.setScale(self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION)
-        bounding_rect = self.sun.graphics_item.boundingRect()
-        self.sun.graphics_item.setPos(QPoint(WINDOW_X_SIZE / 2 - bounding_rect.width() * scale / 2, WINDOW_Y_SIZE / 2 - bounding_rect.height() * scale / 2)) # TODO: might need to adjust this depending on how we implement follow/zoom
         
 
         self.planets : Planet = [ # we should get these from a yaml file
@@ -140,6 +138,8 @@ class MainWindow(QMainWindow):
         # scale sun
         scale = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
         self.sun.graphics_item.setScale(self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION)
+        bounding_rect = self.sun.graphics_item.boundingRect()
+        self.sun.graphics_item.setPos(QPoint(WINDOW_X_SIZE / 2 - bounding_rect.width() * scale / 2, WINDOW_Y_SIZE / 2 - bounding_rect.height() * scale / 2)) # TODO: might need to adjust this depending on how we implement follow/zoom
 
         # technically there's no reason why the physics has to only update once per drawn frame
         # if we need more physics precision we can decouple them and run physics update more often
