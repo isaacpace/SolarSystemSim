@@ -30,6 +30,7 @@ def get_accel_vector(mass, x_disp, y_disp):
 
 class Planet:
     def __init__(self, name, posx, posy, vx, vy, radius, image_path = None):
+        # TODO: add tail to the comet
         self.name = name
         self.posx, self.posy = posx, posy
         self.vx, self.vy = vx, vy
@@ -38,6 +39,8 @@ class Planet:
             self.graphics_item = QGraphicsPixmapItem(QPixmap(image_path))
         else:
             self.graphics_item = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
+        # TODO: on click, show layers
+        # TODO: on right click, set view to follow planet
         self.graphics_item.setToolTip(self.name)
 
 class Sun: # honestly this probably doesn't even need to be a class, might clean up later
@@ -71,6 +74,9 @@ class MainWindow(QMainWindow):
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
     
+        # TODO: star background currently has north star as center but it should actually be
+        # 23.5 degrees off (bc of earth's axial tilt)
+        # can also adjust earth similarly
         self.background = QGraphicsPixmapItem(QPixmap('./assets/bg_stars.png'))
         self.scene.addItem(self.background)
         self.background.setPos(0,0)
@@ -114,6 +120,7 @@ class MainWindow(QMainWindow):
                 self.planets.append(Planet(planet['name'], planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['image']))
         for planet in self.planets:
             self.scene.addItem(planet.graphics_item)
+            # TODO: moons orbiting planets [in progress]
 
         # Timer for physics update
         # TODO: consider using an approach that allows even shorter timer
@@ -174,6 +181,7 @@ class MainWindow(QMainWindow):
 
             # move planet graphic
             planet.graphics_item.setPos(x, y)
+            # TODO: planet rotation?
             
 
 
