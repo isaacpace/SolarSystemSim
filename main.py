@@ -151,7 +151,7 @@ class MainWindow(QMainWindow):
             accel = get_accel_vector(SUN_MASS, planet.posx, planet.posy)
             planet.vx += accel[0] * time_step
             planet.vy += accel[1] * time_step
-            # there's a trick where applying half the acceleration before moving and half after gives a better approximation
+            # there's a trick where applying half the acceleration before moving and half after gives a better approximation if time_step changes
             # may be worth doing if our sim isn't precise enough
     
     def update_frame(self):
@@ -167,9 +167,8 @@ class MainWindow(QMainWindow):
 
         # scale sun
         scale = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
-        self.sun.graphics_item.setScale(self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION)
-        bounding_rect = self.sun.graphics_item.boundingRect()
-        self.sun.graphics_item.setPos(QPoint(WINDOW_X_SIZE / 2 - bounding_rect.width() * scale / 2, WINDOW_Y_SIZE / 2 - bounding_rect.height() * scale / 2)) # TODO: might need to adjust this depending on how we implement follow/zoom
+        self.sun.graphics_item.setScale(scale)
+        self.sun.graphics_item.setPos(WINDOW_X_SIZE / 2.0 - ASSET_RESOLUTION * scale / 2.0, WINDOW_Y_SIZE / 2.0 - ASSET_RESOLUTION * scale / 2.0)
 
         for planet in self.planets:
             # scale planet
