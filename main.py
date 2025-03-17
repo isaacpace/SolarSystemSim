@@ -1,6 +1,6 @@
 import os, sys, yaml, time
 from PySide6.QtCore import Qt, QTimer, QPoint
-from PySide6.QtGui import QPaintEvent, QPixmap, QTransform, QPainter
+from PySide6.QtGui import QPaintEvent, QPixmap, QTransform, QPainter, QBrush
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 
 WINDOW_X_SIZE = 1280
@@ -11,7 +11,6 @@ FPS = 60
 SUN_MASS = 1.989 * 10 ** 30 # this should probably go in a file somewhere
 TICKS_PER_FRAME = 16 # update physics 16x per frame
 
-# since QGraphicsView lets us transform the scale this might as well be a constant
 m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE 
 
 # upscale relevant objects by these factors since space is big and everything is invisibly small by comparison
@@ -71,7 +70,11 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.view)
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        
+    
+        self.background = QGraphicsPixmapItem(QPixmap('./assets/bg_stars.png'))
+        self.scene.addItem(self.background)
+        self.background.setPos(0,0)
+
         # QSlider to control sun_scale
         layout.addWidget(QLabel("Sun Scale"))
         self.sun_scale_slider = QSlider(Qt.Orientation.Horizontal, self)
@@ -159,8 +162,7 @@ class MainWindow(QMainWindow):
         # DON'T do any physics in this function, modify update_physics() instead
 
         # Scale the scene view
-        self.view.resetTransform() # scale is relative to previous scale, so need to reset or it grows/shrinks again on each frame
-        self.view.scale(self.zoom_slider.value() / 100, self.zoom_slider.value() / 100)
+        m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE / (self.zoom_slider.value()/100)
 
         planet_scale = self.planet_scale_slider.value()
         sun_scale = self.sun_scale_slider.value()
