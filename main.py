@@ -1,6 +1,6 @@
 import os, sys, yaml, time
-from PySide6.QtCore import Qt, QTimer, QPoint
-from PySide6.QtGui import QPaintEvent, QPixmap, QTransform, QPainter, QBrush
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QPixmap, QTransform, QPainter
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 
 WINDOW_X_SIZE = 1280
@@ -102,16 +102,6 @@ class MainWindow(QMainWindow):
         self.zoom_slider.setRange(1, 1000) # tweak this
         self.zoom_slider.setValue(100)
         layout.addWidget(self.zoom_slider)
-
-        # TODO: remove this
-        # Load the placeholder image
-        # self.placeholder_image = QPixmap("./assets/sol_placeholder.png")
-        # self.angle = 0
-        # self.pixmap_item = QGraphicsPixmapItem(self.placeholder_image)
-        # self.scene.addItem(self.pixmap_item)
-        # self.pixmap_item.setTransformOriginPoint(self.placeholder_image.width() / 2, self.placeholder_image.height() / 2)
-        # self.pixmap_item.setPos(640 - self.placeholder_image.width() / 2, 360 - self.placeholder_image.height() / 2)
-        # self.pixmap_item.setToolTip("Test Mouseover")
 
 
         self.sun = Sun(695_508_000, './assets/sun.png')
