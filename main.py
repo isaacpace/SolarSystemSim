@@ -1,7 +1,8 @@
+from collections import deque
 import os, sys, yaml, time
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QPixmap, QTransform, QPainter
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
+from PySide6.QtGui import QPixmap, QTransform, QPainter, QPen, QColor
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QPushButton, QButtonGroup, QHBoxLayout
 
 WINDOW_X_SIZE = 1280
 WINDOW_Y_SIZE = 720
@@ -10,6 +11,9 @@ GRAV = 6.6743 * 10**-11
 FPS = 60
 SUN_MASS = 1.989 * 10 ** 30 # this should probably go in a file somewhere
 TICKS_PER_FRAME = 16 # update physics 16x per frame
+
+RED = QColor(255, 0, 0, 50)
+BLUE = QColor(0, 0, 255, 50)
 
 m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE 
 
@@ -62,6 +66,13 @@ class MainWindow(QMainWindow):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         layout = QVBoxLayout(self.central_widget)
+
+        # Visualize Kepler's 2nd Law
+        self.pen = QPen(RED)
+        self.next_pen_color = BLUE
+        self.number_of_kepler_updates = 0
+        self.kepler_lines = deque()
+        self.selected_kepler_object = "None"
 
         # Canvas for drawing
         self.view = QGraphicsView(self)
@@ -122,6 +133,27 @@ class MainWindow(QMainWindow):
             self.scene.addItem(planet.graphics_item)
             # TODO: moons orbiting planets [in progress]
 
+        layout.addWidget(QLabel("Kepler's 2nd Law"))
+        button_layout = QHBoxLayout()
+        button_group = QButtonGroup(self)
+
+        button = QPushButton("None")
+        button.setCheckable(True)
+        button.setStyleSheet("QPushButton {color: black; background-color: white;}")
+        button_group.addButton(button)
+        button_layout.addWidget(button)
+        button.setChecked(True)
+
+        for planet in self.planets:
+            button = QPushButton(planet.name)
+            button.setCheckable(True)
+            button.setStyleSheet("QPushButton {color: black; background-color: white;}")
+            button_group.addButton(button)
+            button_layout.addWidget(button)
+
+        layout.addLayout(button_layout)
+        button_group.buttonClicked.connect(self.kepler_button_clicked)
+
         # Timer for physics update
         # TODO: consider using an approach that allows even shorter timer
         # physics currently run in about 15 us just fine, but QTimer doesn't support delays smaller than 1000 us
@@ -135,6 +167,14 @@ class MainWindow(QMainWindow):
         self.frame_timer.setInterval(1000 / FPS) # 1000 ms / 60 FPS = 16.67 ms
         self.frame_timer.start()
     
+    def kepler_button_clicked(self, button):
+        self.selected_kepler_object = button.text()
+        
+        if self.selected_kepler_object == "None":
+            self.number_of_kepler_updates = 0
+            for _ in range(len(self.kepler_lines)):
+                self.scene.removeItem(self.kepler_lines.popleft())
+
     def update_physics(self):
         # physics updates
         # DON'T draw anything in this function, it will be too slow
@@ -165,9 +205,11 @@ class MainWindow(QMainWindow):
         sun_scale = self.sun_scale_slider.value()
 
         # scale sun
-        scale = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
-        self.sun.graphics_item.setScale(scale)
-        self.sun.graphics_item.setPos(WINDOW_X_SIZE / 2.0 - ASSET_RESOLUTION * scale / 2.0, WINDOW_Y_SIZE / 2.0 - ASSET_RESOLUTION * scale / 2.0)
+        scale_of_sun = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION
+        sun_x = WINDOW_X_SIZE / 2.0 - ASSET_RESOLUTION * scale_of_sun / 2.0
+        sun_y = WINDOW_Y_SIZE / 2.0 - ASSET_RESOLUTION * scale_of_sun / 2.0
+        self.sun.graphics_item.setScale(scale_of_sun)
+        self.sun.graphics_item.setPos(sun_x, sun_y)
 
         for planet in self.planets:
             # scale planet
@@ -184,8 +226,22 @@ class MainWindow(QMainWindow):
             # TODO: planet rotation?
             
 
+            if planet.name == self.selected_kepler_object:
+                new_line = QGraphicsLineItem(sun_x + self.sun.graphics_item.boundingRect().width() * scale_of_sun / 2.0, sun_y + bounding_rect.height() * scale_of_sun / 2.0, x + bounding_rect.width() * scale / 2.0, y + bounding_rect.height() * scale / 2.0)
+                self.kepler_lines.append(new_line)
 
+                new_line.setPen(self.pen)
+                self.scene.addItem(new_line)
 
+                if len(self.kepler_lines) > 120:
+                    self.scene.removeItem(self.kepler_lines.popleft())
+                
+                if self.number_of_kepler_updates == 60:
+                    self.pen.setColor(self.next_pen_color) 
+                    self.next_pen_color = RED if self.next_pen_color == BLUE else BLUE
+                    self.number_of_kepler_updates = 0
+            
+                self.number_of_kepler_updates += 1
 
 
 if __name__ == "__main__":
