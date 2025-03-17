@@ -2,25 +2,25 @@
   initial_speed: 47870
   aphelion: 69800000000
   radius: 2439700
-  image: ./assets/planet_placeholder.png
+  image: ./assets/Mercury.png
 
 - name: Venus
   initial_speed: 35000
   aphelion: 108940000000
   radius: 6051800
-  image: ./assets/planet_placeholder.png
+  image: ./assets/Venus.png
 
 - name: Earth
   initial_speed: 29800
   aphelion: 149600000000
   radius: 6371000
-  image: ./assets/earth.png
+  image: ./assets/Earth.png
 
 - name: Mars
   initial_speed: 24000
   aphelion: 249000000000
   radius: 3389500
-  image: ./assets/planet_placeholder.png
+  image: ./assets/Mars.png
 
 - name: Jupiter
   initial_speed: 13060
@@ -32,13 +32,13 @@
   initial_speed: 9690
   aphelion: 1510000000000
   radius: 117580000 # include rings
-  image: ./assets/planet_placeholder.png
+  image: ./assets/Saturn.png
 
 - name: Uranus
   initial_speed: 6800
   aphelion: 3008000000000
   radius: 25362000
-  image: ./assets/planet_placeholder.png
+  image: ./assets/Uranus.png
 
 - name: Neptune
   initial_speed: 5430
