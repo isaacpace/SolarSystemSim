@@ -33,7 +33,7 @@ def get_accel_vector(mass, x_disp, y_disp):
 
 
 class Planet:
-    def __init__(self, name, posx, posy, vx, vy, radius, image_path = None):
+    def __init__(self, name, posx, posy, vx, vy, radius, image_path, moons, mass=0):
         # TODO: add tail to the comet
         self.name = name
         self.posx, self.posy = posx, posy
@@ -43,9 +43,25 @@ class Planet:
             self.graphics_item = QGraphicsPixmapItem(QPixmap(image_path))
         else:
             self.graphics_item = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
-        # TODO: on click, show layers
+        self.moons = []
+        for moon in moons:
+            self.moons.append(Moon(moon['name'], self.posx + moon['apoapsis'], 0, 0, self.vy + moon['initial_speed'], moon['radius'], None))
+        self.mass = mass
         # TODO: on right click, set view to follow planet
         self.graphics_item.setToolTip(self.name)
+    
+class Moon:
+    def __init__(self, name, posx, posy, vx, vy, radius, image_path):
+        self.name = name
+        self.posx, self.posy = posx, posy
+        self.vx, self.vy = vx, vy
+        self.radius = radius # this is the radius of the planet itself, NOT orbit
+        if image_path:
+            self.graphics_item = QGraphicsPixmapItem(QPixmap(image_path))
+        else:
+            self.graphics_item = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
+        self.graphics_item.setToolTip(self.name)
+
 
 class Sun: # honestly this probably doesn't even need to be a class, might clean up later
     def __init__(self, radius, image_path = None):
@@ -136,10 +152,11 @@ class MainWindow(QMainWindow):
         with open('planets.yml', 'r') as f:
             data = yaml.safe_load(f)
             for planet in data:
-                self.planets.append(Planet(planet['name'], planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['image']))
+                self.planets.append(Planet(planet['name'], planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['image'], planet.get('moons', [])))
         for planet in self.planets:
             self.scene.addItem(planet.graphics_item)
-            # TODO: moons orbiting planets [in progress]
+            for moon in planet.moons:
+                self.scene.addItem(moon.graphics_item)
 
         with open('./assets/planet_layers_specs.yml', 'r') as f:
             self.planets_composition_data = yaml.safe_load(f)
@@ -186,7 +203,29 @@ class MainWindow(QMainWindow):
         layout.addLayout(button_layout)
         button_group.buttonClicked.connect(self.layers_button_clicked)
 
-        
+        layout.addWidget(QLabel("Follow"))
+        button_layout = QHBoxLayout()
+        button_group = QButtonGroup(self)
+
+        button = QPushButton("Sun")
+        button.setCheckable(True)
+        button.setStyleSheet("QPushButton {color: black; background-color: white;}")
+        button_group.addButton(button)
+        button_layout.addWidget(button)
+        button.setChecked(True)
+
+        for planet in self.planets:
+            button = QPushButton(planet.name)
+            button.setCheckable(True)
+            button.setStyleSheet("QPushButton {color: black; background-color: white;}")
+            button_group.addButton(button)
+            button_layout.addWidget(button)
+
+        layout.addLayout(button_layout)
+        button_group.buttonClicked.connect(self.follow_planet)
+
+        self.selected_follow_object = "Sun"
+
         self.real_world_delta_time = -1
         self.real_world_time = time.perf_counter()
 
@@ -209,6 +248,10 @@ class MainWindow(QMainWindow):
         if self.selected_layers_object == "None":
             for _ in range(len(self.previous_concentric_circles)):
                 self.scene.removeItem(self.previous_concentric_circles.pop())
+        
+    def follow_planet(self, button):
+        self.selected_follow_object = button.text()
+        print(self.selected_follow_object)
 
     def update_physics(self):
         # physics updates
@@ -227,6 +270,24 @@ class MainWindow(QMainWindow):
 
             # apply acceleration to planet
             accel = get_accel_vector(SUN_MASS, planet.posx, planet.posy)
+
+            # apply acceleration to moons
+            for moon in planet.moons:
+                moon.posx += moon.vx * time_step
+                moon.posy += moon.vy * time_step
+                accel_sun = get_accel_vector(SUN_MASS, moon.posx, moon.posy)
+                # print('###')
+                # print(accel_sun)
+                moon.vx += accel_sun[0] * time_step
+                moon.vy += accel_sun[1] * time_step
+                # print(moon.posx, planet.posx)
+                # print(moon.posy, planet.posy)
+                accel_planet = get_accel_vector(planet.mass, moon.posx - planet.posx, moon.posy - planet.posy)
+                # print(accel_planet)
+                moon.vx += accel_planet[0] * time_step
+                moon.vy += accel_planet[1] * time_step
+
+
             planet.vx += accel[0] * time_step
             planet.vy += accel[1] * time_step
             # there's a trick where applying half the acceleration before moving and half after gives a better approximation if time_step changes
@@ -285,6 +346,30 @@ class MainWindow(QMainWindow):
                     self.number_of_kepler_updates = 0
             
                 self.number_of_kepler_updates += 1
+            
+            for moon in planet.moons:
+                scale = moon.radius * 2 * planet_scale / m_per_px / ASSET_RESOLUTION
+                moon.graphics_item.setScale(scale)
+                bounding_rect = moon.graphics_item.boundingRect() # can probably just use ASSET_RESOLUTION for this, I'm just not sure if that will still work with rotation if we add that
+                x = WINDOW_X_SIZE / 2.0 + moon.posx / m_per_px - bounding_rect.width() * scale / 2.0
+                y = WINDOW_Y_SIZE / 2.0 + moon.posy / m_per_px - bounding_rect.height() * scale / 2.0
+                moon.graphics_item.setPos(x, y)
+        
+        if self.selected_follow_object == 'Sun':
+            for item in self.scene.items():
+                item.resetTransform()
+        else:
+            for planet in self.planets:
+                if planet.name == self.selected_follow_object:
+                    transform = QTransform()
+                    scale = planet.radius * 2 * planet_scale / m_per_px / ASSET_RESOLUTION
+                    bounding_rect = planet.graphics_item.boundingRect()
+                    x = planet.posx / m_per_px - bounding_rect.width() * scale / 2.0
+                    y = planet.posy / m_per_px - bounding_rect.height() * scale / 2.0
+                    transform.translate(-x, -y)
+                    for item in self.scene.items():
+                        if item != self.background:
+                            item.setTransform(transform)
 
     def draw_comet_tail(self, sun_x, sun_y, curr_x, curr_y):
         if self.comet_tail:

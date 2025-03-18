@@ -15,6 +15,12 @@
   aphelion: 149600000000
   radius: 6371000
   image: ./assets/Earth.png
+  mass: 5972000000000000000000000
+  moons:
+    - name: Moon
+      radius: 1737500
+      apoapsis: 405400000
+      initial_speed: 1000
 
 - name: Mars
   initial_speed: 24000
