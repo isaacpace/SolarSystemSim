@@ -1,5 +1,5 @@
 from collections import deque
-import os, sys, yaml, time
+import os, sys, yaml, time, threading
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QTransform, QPainter, QPen, QColor, QBrush
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QGraphicsEllipseItem, QPushButton, QButtonGroup, QHBoxLayout
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         self.scene.setSceneRect(0, 0, WINDOW_X_SIZE, WINDOW_Y_SIZE)
         self.view.setScene(self.scene)
         self.view.setFixedSize(WINDOW_X_SIZE, WINDOW_Y_SIZE)
-        self.view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+        self.view.setRenderHints(QPainter.SmoothPixmapTransform & ~QPainter.Antialiasing)
         layout.addWidget(self.view)
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -182,14 +182,9 @@ class MainWindow(QMainWindow):
         layout.addLayout(button_layout)
         button_group.buttonClicked.connect(self.layers_button_clicked)
 
-
-        # Timer for physics update
-        # TODO: consider using an approach that allows even shorter timer
-        # physics currently run in about 15 us just fine, but QTimer doesn't support delays smaller than 1000 us
-        self.physics_timer = QTimer(self)
-        self.physics_timer.timeout.connect(self.update_physics)
-        self.physics_timer.setInterval(1000 / FPS / TICKS_PER_FRAME) # 1000 ms / 60 FPS / 16 TICKS_PER_FRAME ~= 1 ms
-        self.physics_timer.start()
+        
+        self.real_world_delta_time = -1
+        self.real_world_time = time.perf_counter()
 
         self.frame_timer = QTimer(self)
         self.frame_timer.timeout.connect(self.update_frame)
@@ -214,9 +209,12 @@ class MainWindow(QMainWindow):
     def update_physics(self):
         # physics updates
         # DON'T draw anything in this function, it will be too slow
+        current_time = time.perf_counter()
+        self.real_world_delta_time =  current_time - self.real_world_time
+        self.real_world_time = current_time
 
         time_scale = self.time_slider.value()
-        time_step = time_scale * (self.physics_timer.interval() / 1000) 
+        time_step = time_scale * self.real_world_delta_time
         
         for planet in self.planets:
             # move planet
@@ -313,11 +311,19 @@ class MainWindow(QMainWindow):
             self.previous_concentric_circles.append(new_circle)
             self.scene.addItem(new_circle)
 
+    def physics_loop(self, kill_flag):
+        while not kill_flag.is_set():
+            self.update_physics()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyleSheet("QLabel { color: white; } QWidget { background-color: black; }")
-
     window = MainWindow()
     window.show()
-    sys.exit(app.exec())
+    physics_kill_flag = threading.Event()
+    physics_thread = threading.Thread(target=window.physics_loop, args = (physics_kill_flag,))
+    physics_thread.start()
+    app.exec()
+    physics_kill_flag.set()
+    sys.exit()
     
