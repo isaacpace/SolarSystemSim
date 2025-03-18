@@ -172,7 +172,7 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(button)
         button.setChecked(True)
 
-        for planet in self.planets:
+        for planet in self.planets[:-1]:
             button = QPushButton(planet.name)
             button.setCheckable(True)
             button.setStyleSheet("QPushButton {color: black; background-color: white;}")
