@@ -1,11 +1,11 @@
 from collections import deque
 import os, sys, yaml, time
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QPixmap, QTransform, QPainter, QPen, QColor
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QPushButton, QButtonGroup, QHBoxLayout
+from PySide6.QtGui import QPixmap, QTransform, QPainter, QPen, QColor, QBrush
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QGraphicsEllipseItem, QPushButton, QButtonGroup, QHBoxLayout
 
 WINDOW_X_SIZE = 1280
-WINDOW_Y_SIZE = 720
+WINDOW_Y_SIZE = 680
 ASSET_RESOLUTION = 400 # images are 400px by 400px
 GRAV = 6.6743 * 10**-11
 FPS = 60
@@ -71,8 +71,12 @@ class MainWindow(QMainWindow):
         self.pen = QPen(RED)
         self.next_pen_color = BLUE
         self.number_of_kepler_updates = 0
-        self.kepler_lines = deque()
         self.selected_kepler_object = "None"
+        self.kepler_lines = deque()
+        
+        # Visualize planet layers
+        self.selected_layers_object = "None"
+        self.previous_concentric_circles = []
 
         # Canvas for drawing
         self.view = QGraphicsView(self)
@@ -116,7 +120,7 @@ class MainWindow(QMainWindow):
         # QSlider to control zoom
         layout.addWidget(QLabel("Zoom"))
         self.zoom_slider = QSlider(Qt.Horizontal, self)
-        self.zoom_slider.setRange(1, 1000) # tweak this
+        self.zoom_slider.setRange(1, 2000) # tweak this
         self.zoom_slider.setValue(100)
         layout.addWidget(self.zoom_slider)
 
@@ -133,7 +137,7 @@ class MainWindow(QMainWindow):
             self.scene.addItem(planet.graphics_item)
             # TODO: moons orbiting planets [in progress]
 
-        layout.addWidget(QLabel("Kepler's 2nd Law"))
+        layout.addWidget(QLabel("Show Kepler's 2nd Law"))
         button_layout = QHBoxLayout()
         button_group = QButtonGroup(self)
 
@@ -153,6 +157,27 @@ class MainWindow(QMainWindow):
 
         layout.addLayout(button_layout)
         button_group.buttonClicked.connect(self.kepler_button_clicked)
+
+        layout.addWidget(QLabel("Show Layers"))
+        button_layout = QHBoxLayout()
+        button_group = QButtonGroup(self)
+
+        button = QPushButton("None")
+        button.setCheckable(True)
+        button.setStyleSheet("QPushButton {color: black; background-color: white;}")
+        button_group.addButton(button)
+        button_layout.addWidget(button)
+        button.setChecked(True)
+
+        for planet in self.planets:
+            button = QPushButton(planet.name)
+            button.setCheckable(True)
+            button.setStyleSheet("QPushButton {color: black; background-color: white;}")
+            button_group.addButton(button)
+            button_layout.addWidget(button)
+
+        layout.addLayout(button_layout)
+        button_group.buttonClicked.connect(self.layers_button_clicked)
 
         # Timer for physics update
         # TODO: consider using an approach that allows even shorter timer
@@ -174,6 +199,13 @@ class MainWindow(QMainWindow):
             self.number_of_kepler_updates = 0
             for _ in range(len(self.kepler_lines)):
                 self.scene.removeItem(self.kepler_lines.popleft())
+
+    def layers_button_clicked(self, button):
+        self.selected_layers_object = button.text()
+
+        if self.selected_layers_object == "None":
+            for _ in range(len(self.previous_concentric_circles)):
+                self.scene.removeItem(self.previous_concentric_circles.pop())
 
     def update_physics(self):
         # physics updates
@@ -225,6 +257,8 @@ class MainWindow(QMainWindow):
             planet.graphics_item.setPos(x, y)
             # TODO: planet rotation?
             
+            if planet.name == self.selected_layers_object: 
+                self.draw_planet_layers(planet.name, x, y, bounding_rect.width() * scale, bounding_rect.height() * scale)
 
             if planet.name == self.selected_kepler_object:
                 new_line = QGraphicsLineItem(sun_x + self.sun.graphics_item.boundingRect().width() * scale_of_sun / 2.0, sun_y + bounding_rect.height() * scale_of_sun / 2.0, x + bounding_rect.width() * scale / 2.0, y + bounding_rect.height() * scale / 2.0)
@@ -243,6 +277,37 @@ class MainWindow(QMainWindow):
             
                 self.number_of_kepler_updates += 1
 
+    def draw_planet_layers(self, planet, outermost_x, outermost_y, outermost_width, outermost_height):
+        if self.previous_concentric_circles:
+            for _ in range(len(self.previous_concentric_circles)):
+                self.scene.removeItem(self.previous_concentric_circles.pop())
+
+        thicknesses, colors, layers = [], [], []
+        total_thickness = 0
+        for layer, description in self.planets_composition_data[planet].items():
+            t, c = int(description["Thickness"]), description["Color"]
+            total_thickness += t
+            thicknesses.append(total_thickness)
+            colors.append(QColor(c))
+            layers.append(layer)
+        
+        # Must reverse order in order for inner layers to be drawn on top of outer layers
+        thicknesses.reverse()
+        layers.reverse()
+        colors.reverse()
+
+        for i, t in enumerate(thicknesses):
+            p = (t / total_thickness) 
+            inner_width, inner_height = p * outermost_width, p * outermost_height
+            inner_x, inner_y = outermost_x + outermost_width / 2 - inner_width / 2, outermost_y + outermost_height / 2 - inner_height / 2
+            
+            new_circle = QGraphicsEllipseItem(inner_x, inner_y, inner_width, inner_height)
+            new_circle.setBrush(QBrush(colors[i]))
+            new_circle.setPen(QPen(colors[i]))
+            new_circle.setToolTip(layers[i])
+            
+            self.previous_concentric_circles.append(new_circle)
+            self.scene.addItem(new_circle)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

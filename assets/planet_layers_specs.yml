@@ -1,62 +1,62 @@
 Mercury:
   Core:
     Thickness: 2_074 # km
-    Color: (70, 69, 63) # RGB
+    Color: "#C0C0C0" # Hex
     Elements:
       - Iron
   Mantle:
     Thickness: 400 
-    Color: (222, 146, 71)
+    Color: "#A56428"
     Elements:
       - Iron
       - Magnesium
   Crust:
     Thickness: 30
-    Color: (226, 202, 68)
+    Color: "#F9E303"
     Elements:
       - Silicon
 
 Venus:
   Core:
     Thickness: 3_000 
-    Color:
+    Color: "#C0C0C0"
     Elements:
       - Iron
       - Nickel
   Mantle:
     Thickness: 2_840
-    Color:
+    Color: "#A56428"
     Elements:
       - Silicon
   Crust:
     Thickness: 20
-    Color:
+    Color: "#F9E303"
     Elements:
       - Silicon
 
 Earth:
   Inner Core:
     Thickness: 1_221
-    Color: 
+    Color: "#C0C0C0"
     Elements:
       - Iron
       - Nickel
   Outer Core:
     Thickness: 2_300
-    Color: 
+    Color: "#A56428"
     Elements:
       - Iron
       - Nickel
   Mantle:
     Thickness: 2_900
-    Color:
+    Color: "#C8BAFA"
     Elements:
       - Magnesium
       - Oxygen
       - Silicon
   Crust:
     Thickness: 30
-    Color:
+    Color: "#F9E303"
     Elements:
       - Aluminum
       - Iron
@@ -66,14 +66,14 @@ Earth:
 Mars:
   Core:
     Thickness: 1_800
-    Color:
+    Color: "#C0C0C0"
     Elements:
       - Iron
       - Nickel
       - Sulfur
   Mantle:
     Thickness: 1_560
-    Color:
+    Color: "#A56428"
     Elements:
       - Iron
       - Magnesium
@@ -81,7 +81,7 @@ Mars:
       - Silicon
   Crust:
     Thickness: 30
-    Color:
+    Color: "#F9E303"
     Elements:
       - Aluminum
       - Calcium
@@ -92,48 +92,48 @@ Mars:
 Jupiter:
   Core:
     Thickness: 10_000 # Unknown
-    Color:
+    Color: "#C0C0C0"
     Elements:
       - Unknown
   Metallic Hydrogen Layer: # Questionable
     Thickness: 40_000
-    Color:
+    Color: "#ADC4C6"
     Elements:
       - Hydrogen
   Molecular Hydrogen Layer: # Questionable
     Thickness: 20_000
-    Color:
+    Color: "#246C6E"
     Elements:
       - Hydrogen
 
 Saturn:
   Core:
     Thickness: 10_000 # Unknown
-    Color:
+    Color: "#C0C0C0"
     Elements:
       - Iron
       - Nickel
   Metallic Hydrogen Layer: # Questionable
     Thickness: 20_000
-    Color:
+    Color: "#ADC4C6"
     Elements:
       - Hydrogen
   Molecular Hydrogen Layer: # Questionable
     Thickness: 30_000
-    Color:
+    Color: "#246C6E"
     Elements:
       - Hydrogen
 
 Uranus:
   Core:
     Thickness: 4_000 # Questionable
-    Color:
+    Color: "#C0C0C0"
     Elements:
       - Iron
       - Nickel
   Icy Layer:
     Thickness: 17_000 # Questionable
-    Color:
+    Color: "#62F3FB"
     Elements:
       - Carbon
       - Hydrogen
@@ -143,13 +143,13 @@ Uranus:
 Neptune:
   Core:
     Thickness: 4_000 # Questionable
-    Color:
+    Color: "#C0C0C0"
     Elements:
       - Iron
       - Nickel
   Icy Layer:
     Thickness: 17_000 # Questionable
-    Color:
+    Color: "#62F3FB"
     Elements:
       - Carbon
       - Hydrogen
