@@ -123,6 +123,9 @@ Saturn:
     Color: "#246C6E"
     Elements:
       - Hydrogen
+  Rings: #transparent layer so that others don't hide rings
+    Thickness: 60_000
+    Color: "#00FF00FF" # 0% opacity magenta
 
 Uranus:
   Core:
