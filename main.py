@@ -21,7 +21,7 @@ m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE
 sun_scale = 100
 planet_scale = 5000
 
-default_time_scale = 3_000_000
+default_time_scale = 1_000_000
 
 def get_accel_vector(mass, x_disp, y_disp):
     # g = GM/(R^2)
@@ -45,7 +45,7 @@ class Planet:
             self.graphics_item = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
         self.moons = []
         for moon in moons:
-            self.moons.append(Moon(moon['name'], self.posx + moon['apoapsis'], 0, 0, self.vy + moon['initial_speed'], moon['radius'], None))
+            self.moons.append(Moon(moon['name'], self.posx + moon['apoapsis'], 0, 0, self.vy + moon['initial_speed'], moon['radius'], moon['image']))
         self.mass = mass
         # TODO: on right click, set view to follow planet
         self.graphics_item.setToolTip(f"Planet: {self.name}\nFun Fact: {fact}")
@@ -362,10 +362,8 @@ class MainWindow(QMainWindow):
             for planet in self.planets:
                 if planet.name == self.selected_follow_object:
                     transform = QTransform()
-                    scale = planet.radius * 2 * planet_scale / m_per_px / ASSET_RESOLUTION
-                    bounding_rect = planet.graphics_item.boundingRect()
-                    x = planet.posx / m_per_px - bounding_rect.width() * scale / 2.0
-                    y = planet.posy / m_per_px - bounding_rect.height() * scale / 2.0
+                    x = planet.posx / m_per_px
+                    y = planet.posy / m_per_px
                     transform.translate(-x, -y)
                     for item in self.scene.items():
                         if item != self.background:
