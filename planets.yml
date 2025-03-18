@@ -23,6 +23,7 @@
       radius: 1737500
       apoapsis: 405400000
       initial_speed: 1000
+      image: ./assets/moon.png
   fact: Earth is the only world in our Solar System with liquid water on the surface.
 
 - name: Mars
@@ -43,18 +44,22 @@
       radius: 2634100
       apoapsis: 1070400000
       initial_speed: 10800
+      image: ./assets/ganymede.png
     - name: Callisto
       radius: 2410300
       apoapsis: 1882700000
       initial_speed: 8200
+      image: ./assets/callisto.png
     - name: Europa
       radius: 1560800
       apoapsis: 676938000
       initial_speed: 13740
+      image: ./assets/europa.png
     - name: Io
       radius: 1821600
       apoapsis: 400000000
       initial_speed: 15000
+      image: ./assets/io.png
   fact: Jupiter is famous for its Great Red Spot which is a giant storm bigger than Earth that has raged for hundreds of years.
 
 - name: Saturn
@@ -68,6 +73,7 @@
       radius: 2574000
       apoapsis: 1222000000
       initial_speed: 5570
+      image: ./assets/titan.png
   fact: Saturn has a ring system that extends up to 282,000 kilometers from the body of the planet.
 
 - name: Uranus
