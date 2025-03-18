@@ -33,7 +33,7 @@ def get_accel_vector(mass, x_disp, y_disp):
 
 
 class Planet:
-    def __init__(self, name, posx, posy, vx, vy, radius, image_path, moons, mass=0):
+    def __init__(self, name, posx, posy, vx, vy, radius, fact, image_path, moons, mass=0):
         # TODO: add tail to the comet
         self.name = name
         self.posx, self.posy = posx, posy
@@ -48,8 +48,8 @@ class Planet:
             self.moons.append(Moon(moon['name'], self.posx + moon['apoapsis'], 0, 0, self.vy + moon['initial_speed'], moon['radius'], None))
         self.mass = mass
         # TODO: on right click, set view to follow planet
-        self.graphics_item.setToolTip(self.name)
-    
+        self.graphics_item.setToolTip(f"Planet: {self.name}\nFun Fact: {fact}")
+
 class Moon:
     def __init__(self, name, posx, posy, vx, vy, radius, image_path):
         self.name = name
@@ -62,7 +62,6 @@ class Moon:
             self.graphics_item = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
         self.graphics_item.setToolTip(self.name)
 
-
 class Sun: # honestly this probably doesn't even need to be a class, might clean up later
     def __init__(self, radius, image_path = None):
         self.radius = radius
@@ -70,6 +69,7 @@ class Sun: # honestly this probably doesn't even need to be a class, might clean
             self.graphics_item = QGraphicsPixmapItem(QPixmap(image_path))
         else:
             self.graphics_item = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
+        self.graphics_item.setToolTip("Star: Sun\nThe Sun's core boasts temperatures that top 15 million °C while its surface is a relatively cool 5,500 °C.")
  
 
 class MainWindow(QMainWindow):
@@ -152,7 +152,7 @@ class MainWindow(QMainWindow):
         with open('planets.yml', 'r') as f:
             data = yaml.safe_load(f)
             for planet in data:
-                self.planets.append(Planet(planet['name'], planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['image'], planet.get('moons', [])))
+                self.planets.append(Planet(planet['name'], planet['aphelion'], 0, 0, planet['initial_speed'], planet['radius'], planet['fact'], planet['image'], planet.get('moons', []), planet.get('mass', 0)))
         for planet in self.planets:
             self.scene.addItem(planet.graphics_item)
             for moon in planet.moons:
@@ -416,7 +416,7 @@ class MainWindow(QMainWindow):
             new_circle = QGraphicsEllipseItem(inner_x, inner_y, inner_width, inner_height)
             new_circle.setBrush(QBrush(colors[i]))
             new_circle.setPen(QPen(colors[i]))
-            new_circle.setToolTip(layers[i])
+            #new_circle.setToolTip(f"Layer: {layers[i]}\nPrimary Elements: {', '.join(self.planets_composition_data[planet][layers[i]]["Elements"])}")
             
             self.previous_concentric_circles.append(new_circle)
             self.scene.addItem(new_circle)
