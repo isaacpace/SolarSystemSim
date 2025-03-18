@@ -3,51 +3,60 @@
   aphelion: 69800000000
   radius: 2439700
   image: ./assets/Mercury.png
+  fact: Mercury speeds around the Sun every 88 days, traveling through space at nearly 47 kilometers per second, faster than any other planet.
 
 - name: Venus
   initial_speed: 35000
   aphelion: 108940000000
   radius: 6051800
   image: ./assets/Venus.png
+  fact: Venus has hottest surface in our Solar System (apart from the Sun).
 
 - name: Earth
   initial_speed: 29800
   aphelion: 149600000000
   radius: 6371000
   image: ./assets/Earth.png
+  fact: Earth is the only world in our Solar System with liquid water on the surface.
 
 - name: Mars
   initial_speed: 24000
   aphelion: 249000000000
   radius: 3389500
   image: ./assets/Mars.png
+  fact: Mars has large canyon system called Valles Marineris that is long enough to stretch from California to New York.
 
 - name: Jupiter
   initial_speed: 13060
   aphelion: 816400000000
   radius: 69900000
   image: ./assets/Jupiter.png
+  fact: Jupiter is famous for its Great Red Spot which is a giant storm bigger than Earth that has raged for hundreds of years.
 
 - name: Saturn
   initial_speed: 9690
   aphelion: 1510000000000
   radius: 117580000 # include rings
   image: ./assets/Saturn.png
+  fact: Saturn has a ring system that extends up to 282,000 kilometers from the body of the planet.
 
 - name: Uranus
   initial_speed: 6800
   aphelion: 3008000000000
   radius: 25362000
   image: ./assets/Uranus.png
+  fact: Uranus gets its blue-green color from methane gas in the atmosphere since the methane gas absorbs the red portion of sunlight, resulting in a blue-green color.
 
 - name: Neptune
   initial_speed: 5430
   aphelion: 4500000000000
   radius: 24622000
   image: ./assets/Neptune.png
+  fact: Neptune is the windiest world in our Solar System with winds that can be three times stronger than winds on Jupiter and nine times stronger than winds on Earth.
 
 - name: Comet
   initial_speed: 1200
   aphelion: 7500000000000
   radius: 20000000
   image: ./assets/planet_placeholder.png
+  fact: Comet tails point away from the Sun, regardless of the direction in which the comet is traveling.
