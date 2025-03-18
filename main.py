@@ -2,7 +2,7 @@ from collections import deque
 import os, sys, yaml, time, threading
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QTransform, QPainter, QPen, QColor, QBrush
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QGraphicsEllipseItem, QPushButton, QButtonGroup, QHBoxLayout
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsLineItem, QGraphicsEllipseItem, QPushButton, QButtonGroup, QHBoxLayout, QGraphicsPolygonItem
 
 WINDOW_X_SIZE = 1280
 WINDOW_Y_SIZE = 680
@@ -77,6 +77,10 @@ class MainWindow(QMainWindow):
         # Visualize planet layers
         self.selected_layers_object = "None"
         self.previous_concentric_circles = []
+
+        # Visualize comet tail
+        self.comet_tail = []
+        self.comet_tail_pen = QPen(QColor(Qt.white), 3)
 
         # Canvas for drawing
         self.view = QGraphicsView(self)
@@ -259,6 +263,9 @@ class MainWindow(QMainWindow):
             planet.graphics_item.setPos(x, y)
             # TODO: planet rotation?
             
+            if planet.name == "Comet":
+                self.draw_comet_tail(sun_x + self.sun.graphics_item.boundingRect().width() * scale_of_sun / 2.0, sun_y + bounding_rect.height() * scale_of_sun / 2.0, x + bounding_rect.width() * scale / 2.0, y + bounding_rect.height() * scale / 2.0)
+
             if planet.name == self.selected_layers_object: 
                 self.draw_planet_layers(planet.name, x, y, bounding_rect.width() * scale, bounding_rect.height() * scale)
 
@@ -278,6 +285,24 @@ class MainWindow(QMainWindow):
                     self.number_of_kepler_updates = 0
             
                 self.number_of_kepler_updates += 1
+
+    def draw_comet_tail(self, sun_x, sun_y, curr_x, curr_y):
+        if self.comet_tail:
+            for _ in range(len(self.comet_tail)):
+                self.scene.removeItem(self.comet_tail.pop())
+
+        unit_direction_x = curr_x - sun_x
+        unit_direction_y = curr_y - sun_y
+
+        magnitude = (unit_direction_x ** 2 + unit_direction_y ** 2) ** 0.5
+        unit_direction_x /= magnitude
+        unit_direction_y /= magnitude
+
+        for spacing_x, spacing_y in [(0, 0), (3, 0), (-3, 0), (0, 3), (0, -3)]:
+            line = QGraphicsLineItem(curr_x + spacing_x, curr_y + spacing_y, curr_x + unit_direction_x * 70, curr_y + unit_direction_y * 70)
+            line.setPen(self.comet_tail_pen)
+            self.comet_tail.append(line)
+            self.scene.addItem(line)
 
     def draw_planet_layers(self, planet, outermost_x, outermost_y, outermost_width, outermost_height):
         if self.previous_concentric_circles:
