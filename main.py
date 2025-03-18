@@ -137,6 +137,9 @@ class MainWindow(QMainWindow):
             self.scene.addItem(planet.graphics_item)
             # TODO: moons orbiting planets [in progress]
 
+        with open('./assets/planet_layers_specs.yml', 'r') as f:
+            self.planets_composition_data = yaml.safe_load(f)
+
         layout.addWidget(QLabel("Show Kepler's 2nd Law"))
         button_layout = QHBoxLayout()
         button_group = QButtonGroup(self)
@@ -178,6 +181,7 @@ class MainWindow(QMainWindow):
 
         layout.addLayout(button_layout)
         button_group.buttonClicked.connect(self.layers_button_clicked)
+
 
         # Timer for physics update
         # TODO: consider using an approach that allows even shorter timer
