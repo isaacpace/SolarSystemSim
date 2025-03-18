@@ -64,5 +64,5 @@
   initial_speed: 1200
   aphelion: 7500000000000
   radius: 20000000
-  image: ./assets/planet_placeholder.png
+  image: ./assets/comet.png
   fact: Comet tails point away from the Sun, regardless of the direction in which the comet is traveling.
