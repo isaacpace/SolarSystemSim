@@ -18,10 +18,10 @@ BLUE = QColor(0, 0, 255, 50)
 m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE 
 
 # upscale relevant objects by these factors since space is big and everything is invisibly small by comparison
-sun_scale = 100
-planet_scale = 5000
+sun_scale = 1
+planet_scale = 1
 
-default_time_scale = 1_000_000
+default_time_scale = 1
 
 def get_accel_vector(mass, x_disp, y_disp):
     # g = GM/(R^2)
@@ -34,7 +34,6 @@ def get_accel_vector(mass, x_disp, y_disp):
 
 class Planet:
     def __init__(self, name, posx, posy, vx, vy, radius, fact, image_path, moons, mass=0):
-        # TODO: add tail to the comet
         self.name = name
         self.posx, self.posy = posx, posy
         self.vx, self.vy = vx, vy
@@ -119,28 +118,28 @@ class MainWindow(QMainWindow):
         # QSlider to control sun_scale
         layout.addWidget(QLabel("Sun Scale"))
         self.sun_scale_slider = QSlider(Qt.Orientation.Horizontal, self)
-        self.sun_scale_slider.setRange(0, sun_scale * 10)
+        self.sun_scale_slider.setRange(1, 150)
         self.sun_scale_slider.setValue(sun_scale)
         layout.addWidget(self.sun_scale_slider)
 
         # QSlider to control planet_scale
         layout.addWidget(QLabel("Planet Scale"))
         self.planet_scale_slider = QSlider(Qt.Orientation.Horizontal, self)
-        self.planet_scale_slider.setRange(0, planet_scale * 10)
+        self.planet_scale_slider.setRange(1, 150)
         self.planet_scale_slider.setValue(planet_scale)
         layout.addWidget(self.planet_scale_slider)
 
         # QSlider to control time warp
         layout.addWidget(QLabel("Time Scale"))
         self.time_slider = QSlider(Qt.Horizontal, self)
-        self.time_slider.setRange(0, default_time_scale * 10) # max speed is about 1 year per second
+        self.time_slider.setRange(0, 800) # max speed is about 1 year per second
         self.time_slider.setValue(default_time_scale)
         layout.addWidget(self.time_slider)
 
         # QSlider to control zoom
         layout.addWidget(QLabel("Zoom"))
         self.zoom_slider = QSlider(Qt.Horizontal, self)
-        self.zoom_slider.setRange(1, 2000) # tweak this
+        self.zoom_slider.setRange(1, 4000) # tweak this
         self.zoom_slider.setValue(100)
         layout.addWidget(self.zoom_slider)
 
@@ -260,7 +259,7 @@ class MainWindow(QMainWindow):
         self.real_world_delta_time =  current_time - self.real_world_time
         self.real_world_time = current_time
 
-        time_scale = self.time_slider.value()
+        time_scale = 10**(self.time_slider.value() / 100.0)
         time_step = time_scale * self.real_world_delta_time
         
         for planet in self.planets:
@@ -298,10 +297,10 @@ class MainWindow(QMainWindow):
         # DON'T do any physics in this function, modify update_physics() instead
 
         # Scale the scene view
-        m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE / (self.zoom_slider.value()/100)
+        m_per_px = 10_000_000_000_000 / WINDOW_Y_SIZE / (2**(self.zoom_slider.value()/100))
 
-        planet_scale = self.planet_scale_slider.value()
-        sun_scale = self.sun_scale_slider.value()
+        planet_scale = 2**(self.planet_scale_slider.value() / 10.0)
+        sun_scale = 2**(self.sun_scale_slider.value() / 10.0)
 
         # scale sun
         scale_of_sun = self.sun.radius * 2 * sun_scale / m_per_px / ASSET_RESOLUTION

@@ -57,8 +57,8 @@
       image: ./assets/europa.png
     - name: Io
       radius: 1821600
-      apoapsis: 400000000
-      initial_speed: 15000
+      apoapsis: 420000000
+      initial_speed: 17000
       image: ./assets/io.png
   fact: Jupiter is famous for its Great Red Spot which is a giant storm bigger than Earth that has raged for hundreds of years.
 
