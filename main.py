@@ -314,6 +314,7 @@ class MainWindow(QMainWindow):
     def physics_loop(self, kill_flag):
         while not kill_flag.is_set():
             self.update_physics()
+            time.sleep(0.0002)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
