@@ -413,7 +413,7 @@ class MainWindow(QMainWindow):
             new_circle = QGraphicsEllipseItem(inner_x, inner_y, inner_width, inner_height)
             new_circle.setBrush(QBrush(colors[i]))
             new_circle.setPen(QPen(colors[i]))
-            #new_circle.setToolTip(f"Layer: {layers[i]}\nPrimary Elements: {', '.join(self.planets_composition_data[planet][layers[i]]["Elements"])}")
+            new_circle.setToolTip(f"Layer: {layers[i]}\nPrimary Elements: {', '.join(self.planets_composition_data[planet][layers[i]]['Elements'])}")
             
             self.previous_concentric_circles.append(new_circle)
             self.scene.addItem(new_circle)
