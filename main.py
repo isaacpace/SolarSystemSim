@@ -7,10 +7,9 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxL
 WINDOW_X_SIZE = 1280
 WINDOW_Y_SIZE = 680
 ASSET_RESOLUTION = 400 # images are 400px by 400px
-GRAV = 6.6743 * 10**-11
+GRAV = 6.6743 * 10**-11 # Gravitational constant
 FPS = 60
-SUN_MASS = 1.989 * 10 ** 30 # this should probably go in a file somewhere
-TICKS_PER_FRAME = 16 # update physics 16x per frame
+SUN_MASS = 1.989 * 10 ** 30
 
 RED = QColor(255, 0, 0, 50)
 BLUE = QColor(0, 0, 255, 50)
@@ -60,7 +59,7 @@ class Moon:
             self.graphics_item = QGraphicsPixmapItem(QPixmap("./assets/planet_placeholder.png"))
         self.graphics_item.setToolTip(self.name)
 
-class Sun: # honestly this probably doesn't even need to be a class, might clean up later
+class Sun:
     def __init__(self, radius, image_path = None):
         self.radius = radius
         if image_path:
