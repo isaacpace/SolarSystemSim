@@ -46,7 +46,6 @@ class Planet:
         for moon in moons:
             self.moons.append(Moon(moon['name'], self.posx + moon['apoapsis'], 0, 0, self.vy + moon['initial_speed'], moon['radius'], moon['image']))
         self.mass = mass
-        # TODO: on right click, set view to follow planet
         self.graphics_item.setToolTip(f"Planet: {self.name}\nFun Fact: {fact}")
 
 class Moon:
@@ -107,10 +106,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.view)
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-    
-        # TODO: star background currently has north star as center but it should actually be
-        # 23.5 degrees off (bc of earth's axial tilt)
-        # can also adjust earth similarly
+
         self.background = QGraphicsPixmapItem(QPixmap('./assets/bg_stars.png'))
         self.scene.addItem(self.background)
         self.background.setPos(0,0)
@@ -132,14 +128,14 @@ class MainWindow(QMainWindow):
         # QSlider to control time warp
         layout.addWidget(QLabel("Time Scale"))
         self.time_slider = QSlider(Qt.Horizontal, self)
-        self.time_slider.setRange(0, 800) # max speed is about 1 year per second
+        self.time_slider.setRange(0, 800)
         self.time_slider.setValue(default_time_scale)
         layout.addWidget(self.time_slider)
 
         # QSlider to control zoom
         layout.addWidget(QLabel("Zoom"))
         self.zoom_slider = QSlider(Qt.Horizontal, self)
-        self.zoom_slider.setRange(1, 4000) # tweak this
+        self.zoom_slider.setRange(1, 4000)
         self.zoom_slider.setValue(100)
         layout.addWidget(self.zoom_slider)
 
@@ -275,22 +271,15 @@ class MainWindow(QMainWindow):
                 moon.posx += moon.vx * time_step
                 moon.posy += moon.vy * time_step
                 accel_sun = get_accel_vector(SUN_MASS, moon.posx, moon.posy)
-                # print('###')
-                # print(accel_sun)
                 moon.vx += accel_sun[0] * time_step
                 moon.vy += accel_sun[1] * time_step
-                # print(moon.posx, planet.posx)
-                # print(moon.posy, planet.posy)
                 accel_planet = get_accel_vector(planet.mass, moon.posx - planet.posx, moon.posy - planet.posy)
-                # print(accel_planet)
                 moon.vx += accel_planet[0] * time_step
                 moon.vy += accel_planet[1] * time_step
 
 
             planet.vx += accel[0] * time_step
             planet.vy += accel[1] * time_step
-            # there's a trick where applying half the acceleration before moving and half after gives a better approximation if time_step changes
-            # may be worth doing if our sim isn't precise enough
     
     def update_frame(self):
         # draw updates
@@ -315,13 +304,12 @@ class MainWindow(QMainWindow):
             planet.graphics_item.setScale(scale)
 
             # calculate planet coordinates on canvas
-            bounding_rect = planet.graphics_item.boundingRect() # can probably just use ASSET_RESOLUTION for this, I'm just not sure if that will still work with rotation if we add that
+            bounding_rect = planet.graphics_item.boundingRect()
             x = WINDOW_X_SIZE / 2.0 + planet.posx / m_per_px - bounding_rect.width() * scale / 2.0
             y = WINDOW_Y_SIZE / 2.0 + planet.posy / m_per_px - bounding_rect.height() * scale / 2.0
 
             # move planet graphic
             planet.graphics_item.setPos(x, y)
-            # TODO: planet rotation?
             
             if planet.name == "Comet":
                 self.draw_comet_tail(sun_x + self.sun.graphics_item.boundingRect().width() * scale_of_sun / 2.0, sun_y + bounding_rect.height() * scale_of_sun / 2.0, x + bounding_rect.width() * scale / 2.0, y + bounding_rect.height() * scale / 2.0)
@@ -349,7 +337,7 @@ class MainWindow(QMainWindow):
             for moon in planet.moons:
                 scale = moon.radius * 2 * planet_scale / m_per_px / ASSET_RESOLUTION
                 moon.graphics_item.setScale(scale)
-                bounding_rect = moon.graphics_item.boundingRect() # can probably just use ASSET_RESOLUTION for this, I'm just not sure if that will still work with rotation if we add that
+                bounding_rect = moon.graphics_item.boundingRect()
                 x = WINDOW_X_SIZE / 2.0 + moon.posx / m_per_px - bounding_rect.width() * scale / 2.0
                 y = WINDOW_Y_SIZE / 2.0 + moon.posy / m_per_px - bounding_rect.height() * scale / 2.0
                 moon.graphics_item.setPos(x, y)
